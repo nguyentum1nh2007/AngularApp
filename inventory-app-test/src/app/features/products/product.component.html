@@ -1,0 +1,68 @@
+<div style="padding: 20px; max-width: 900px;">
+    <h2>Quản Lý Sản Phẩm</h2>
+    <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; background: #f9f9f9;">
+        <h3>Thêm Sản Phẩm Mới</h3>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <input [(ngModel)]="newName" placeholder="Tên sản phẩm..." style="padding: 6px;" />
+
+            <select [(ngModel)]="newCategoryId" style="padding: 6px;">
+                <option value="">-- Chọn Danh Mục --</option>
+                <!-- <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option> -->
+                @for (cat of categories; track $index) {
+                <option [value]="cat.id">{{ cat.name }}</option>
+                }
+            </select>
+
+            <input type="number" [(ngModel)]="newPrice" placeholder="Giá..." style="padding: 6px; width: 100px;" />
+            <input type="number" [(ngModel)]="newQuantity" placeholder="Số lượng..."
+                style="padding: 6px; width: 90px;" />
+
+            <button (click)="addProduct()" style="padding: 6px 15px; cursor: pointer;">Thêm</button>
+        </div>
+    </div>
+
+    <table border="1" cellPadding="8" style="border-collapse: collapse; width: 100%;">
+        <thead>
+            <tr style="background: #eee;">
+                <th>Tên Sản Phẩm</th>
+                <th>Danh Mục</th>
+                <th>Đơn Giá</th>
+                <th>Tồn Kho</th>
+                <th style="width: 140px;">Hành Động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let p of products">
+                <ng-container *ngIf="editingProduct && editingProduct.id === p.id; else viewMode">
+                    <td><input [(ngModel)]="editingProduct.name" style="width: 90%;" /></td>
+                    <td>
+                        <select [(ngModel)]="editingProduct.categoryId">
+                            <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+                        </select>
+                    </td>
+                    <td><input type="number" [(ngModel)]="editingProduct.price" style="width: 80px;" /></td>
+                    <td><input type="number" [(ngModel)]="editingProduct.stockQuantity" style="width: 60px;" /></td>
+                    <td>
+                        <button (click)="saveEdit()" style="color: green;">Lưu</button>
+                        <button (click)="cancelEdit()">Hủy</button>
+                    </td>
+                </ng-container>
+
+                <ng-template #viewMode>
+                    <td>{{ p.name }}</td>
+                    <td>{{ getCategoryName(p.categoryId) }}</td>
+                    <td>{{ p.price | number }} VNĐ</td>
+                    <td>{{ p.stockQuantity }}</td>
+                    <td>
+                        <button (click)="startEdit(p)">Sửa</button>
+                        <button (click)="deleteProduct(p.id)" style="color: red;">Xóa</button>
+                    </td>
+                </ng-template>
+            </tr>
+
+            <tr *ngIf="products.length === 0">
+                <td colspan="5" style="text-align: center;">Chưa có sản phẩm nào.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
