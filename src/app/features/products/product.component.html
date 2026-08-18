@@ -1,0 +1,92 @@
+<div style="padding: 20px; max-width: 900px;">
+    <h2>Quản Lý Sản Phẩm</h2>
+    <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; background: #f9f9f9;">
+        <h3>Thêm Sản Phẩm Mới</h3>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start;">
+
+            <div>
+                <input [(ngModel)]="newName" (input)="clearAddError()" placeholder="Tên sản phẩm..."
+                    style="padding: 6px; border: 1px solid;"
+                    [style.border-color]="addError && (!newName.trim() || addError.includes('tồn tại')) ? 'red' : '#ccc'" />
+            </div>
+
+            <div>
+                <select [(ngModel)]="newCategoryId" (change)="clearAddError()" style="padding: 6px; border: 1px solid;"
+                    [style.border-color]="addError && !newCategoryId ? 'red' : '#ccc'">
+                    <option value="">-- Chọn Danh Mục --</option>
+                    @for (cat of categories; track $index) {
+                    <option [value]="cat.id">{{ cat.name }}</option>
+                    }
+                </select>
+            </div>
+
+            <input type="number" [(ngModel)]="newPrice" placeholder="Giá..."
+                style="padding: 6px; width: 100px; border: 1px solid #ccc;" />
+            <input type="number" [(ngModel)]="newQuantity" placeholder="Số lượng..."
+                style="padding: 6px; width: 90px; border: 1px solid #ccc;" />
+
+            <button (click)="addProduct()" style="padding: 6px 15px; cursor: pointer;">Thêm</button>
+        </div>
+
+        <div *ngIf="addError" style="color: red; font-size: 13px; margin-top: 10px; font-weight: bold;">
+            {{ addError }}
+        </div>
+    </div>
+
+    <table border="1" cellPadding="8" style="border-collapse: collapse; width: 100%;">
+        <thead>
+            <tr style="background: #eee;">
+                <th>Tên Sản Phẩm</th>
+                <th>Danh Mục</th>
+                <th>Đơn Giá</th>
+                <th>Tồn Kho</th>
+                <th style="width: 140px;">Hành Động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let p of products">
+                <ng-container *ngIf="editingProduct && editingProduct.id === p.id; else viewMode">
+                    <td>
+                        <input [(ngModel)]="editingProduct.name" (input)="clearEditError()"
+                            style="width: 90%; padding: 4px; border: 1px solid;"
+                            [style.border-color]="editError ? 'red' : '#ccc'" />
+                        <div *ngIf="editError" style="color: red; font-size: 12px; margin-top: 5px; font-weight: bold;">
+                            {{ editError }}
+                        </div>
+                    </td>
+                    <td>
+                        <select [(ngModel)]="editingProduct.categoryId" (change)="clearEditError()"
+                            style="padding: 4px; border: 1px solid;"
+                            [style.border-color]="editError && !editingProduct.categoryId ? 'red' : '#ccc'">
+                            <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+                        </select>
+                    </td>
+                    <td><input type="number" [(ngModel)]="editingProduct.price"
+                            style="width: 80px; padding: 4px; border: 1px solid #ccc;" /></td>
+                    <td><input type="number" [(ngModel)]="editingProduct.stockQuantity"
+                            style="width: 60px; padding: 4px; border: 1px solid #ccc;" /></td>
+                    <td>
+                        <button (click)="saveEdit()"
+                            style="color: green; font-weight: bold; margin-right: 5px;">Lưu</button>
+                        <button (click)="cancelEdit()">Hủy</button>
+                    </td>
+                </ng-container>
+
+                <ng-template #viewMode>
+                    <td>{{ p.name }}</td>
+                    <td>{{ getCategoryName(p.categoryId) }}</td>
+                    <td>{{ p.price | number }} VNĐ</td>
+                    <td>{{ p.stockQuantity }}</td>
+                    <td>
+                        <button (click)="startEdit(p)" style="margin-right: 5px;">Sửa</button>
+                        <button (click)="deleteProduct(p.id)" style="color: red;">Xóa</button>
+                    </td>
+                </ng-template>
+            </tr>
+
+            <tr *ngIf="products.length === 0">
+                <td colspan="5" style="text-align: center;">Chưa có sản phẩm nào.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
