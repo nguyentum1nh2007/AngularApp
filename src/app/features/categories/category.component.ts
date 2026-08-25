@@ -14,6 +14,7 @@ export class CategoryComponent implements OnInit {
     categories: Category[] = [];
     newCategoryName = '';
     addError = '';
+    deleteError = '';
 
 
     editingId: string | null = null;
@@ -46,8 +47,13 @@ export class CategoryComponent implements OnInit {
 
     deleteCategory(id: string) {
         if (confirm('Bạn có chắc muốn xóa danh mục này?')) {
-            this.categoryService.delete(id);
-            this.loadData();
+            const result = this.categoryService.delete(id);
+            if (!result.success) {
+                this.deleteError = result.errorMessage;
+            } else {
+                this.deleteError = '';
+                this.loadData();
+            }
         }
     }
 
@@ -82,9 +88,11 @@ export class CategoryComponent implements OnInit {
 
     clearAddError() {
         this.addError = '';
+        this.deleteError = '';
     }
 
     clearEditError() {
         this.editError = '';
+        this.deleteError = '';
     }
 }

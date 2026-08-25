@@ -48,10 +48,20 @@ export class CategoryService {
         return true;
     }
 
-    delete(id: string): void {
+    delete(id: string): { success: boolean; errorMessage: string } {
+        const products = this.storage.get<any>('PRODUCTS') || [];
+        const hasProducts = products.some((p: any) => p.categoryId === id);
+
+        if (hasProducts) {
+            return {
+                success: false,
+                errorMessage: 'Không thể xóa danh mục này vì vẫn còn sản phẩm thuộc về nó!'
+            };
+        }
+
         const items = this.getAll().filter(c => c.id !== id);
         this.storage.set(this.key, items);
-        alert('Xóa danh mục thành công!');
+        return { success: true, errorMessage: '' };
     }
 
     update(id: string, newName: string): boolean {

@@ -1,30 +1,23 @@
-<div style="padding: 20px; max-width: 900px;">
+<div style="padding: 20px; max-width: 1000px;">
     <h2>Quản Lý Sản Phẩm</h2>
+
     <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; background: #f9f9f9;">
         <h3>Thêm Sản Phẩm Mới</h3>
         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start;">
-
             <div>
                 <input [(ngModel)]="newName" (input)="clearAddError()" placeholder="Tên sản phẩm..."
                     style="padding: 6px; border: 1px solid;"
                     [style.border-color]="addError && (!newName.trim() || addError.includes('tồn tại')) ? 'red' : '#ccc'" />
             </div>
-
             <div>
                 <select [(ngModel)]="newCategoryId" (change)="clearAddError()" style="padding: 6px; border: 1px solid;"
                     [style.border-color]="addError && !newCategoryId ? 'red' : '#ccc'">
                     <option value="">-- Chọn Danh Mục --</option>
-                    @for (cat of categories; track $index) {
-                    <option [value]="cat.id">{{ cat.name }}</option>
-                    }
+                    <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
                 </select>
             </div>
-
             <input type="number" [(ngModel)]="newPrice" placeholder="Giá..."
                 style="padding: 6px; width: 100px; border: 1px solid #ccc;" />
-            <input type="number" [(ngModel)]="newQuantity" placeholder="Số lượng..."
-                style="padding: 6px; width: 90px; border: 1px solid #ccc;" />
-
             <button (click)="addProduct()" style="padding: 6px 15px; cursor: pointer;">Thêm</button>
         </div>
 
@@ -33,9 +26,35 @@
         </div>
     </div>
 
+    <div
+        style="margin-bottom: 15px; padding: 12px; background: #eef2f5; border: 1px solid #d0d7de; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+        <input [(ngModel)]="searchTerm" placeholder="🔍 Tìm theo tên hoặc mã ID..."
+            style="padding: 6px; width: 220px; border: 1px solid #ccc;" />
+
+        <select [(ngModel)]="selectedCategoryFilter" style="padding: 6px; border: 1px solid #ccc;">
+            <option value="">-- Tất cả Danh mục --</option>
+            <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+        </select>
+
+        <select [(ngModel)]="selectedStatusFilter" style="padding: 6px; border: 1px solid #ccc;">
+            <option value="ALL">-- Tất cả Trạng thái --</option>
+            <option value="IN_STOCK">Còn hàng (> 0)</option>
+            <option value="OUT_OF_STOCK">Hết hàng (= 0)</option>
+        </select>
+
+        <select [(ngModel)]="sortBy" style="padding: 6px; border: 1px solid #ccc;">
+            <option value="">-- Sắp xếp --</option>
+            <option value="name_asc">Tên (A-Z)</option>
+            <option value="name_desc">Tên (Z-A)</option>
+            <option value="stock_asc">Tồn kho (Tăng dần)</option>
+            <option value="stock_desc">Tồn kho (Giảm dần)</option>
+        </select>
+    </div>
+
     <table border="1" cellPadding="8" style="border-collapse: collapse; width: 100%;">
         <thead>
             <tr style="background: #eee;">
+                <th>Mã (ID)</th>
                 <th>Tên Sản Phẩm</th>
                 <th>Danh Mục</th>
                 <th>Đơn Giá</th>
@@ -44,8 +63,10 @@
             </tr>
         </thead>
         <tbody>
-            <tr *ngFor="let p of products">
+
+            <tr *ngFor="let p of filteredProducts">
                 <ng-container *ngIf="editingProduct && editingProduct.id === p.id; else viewMode">
+                    <td>{{ p.id }}</td>
                     <td>
                         <input [(ngModel)]="editingProduct.name" (input)="clearEditError()"
                             style="width: 90%; padding: 4px; border: 1px solid;"
@@ -63,8 +84,7 @@
                     </td>
                     <td><input type="number" [(ngModel)]="editingProduct.price"
                             style="width: 80px; padding: 4px; border: 1px solid #ccc;" /></td>
-                    <td><input type="number" [(ngModel)]="editingProduct.stockQuantity"
-                            style="width: 60px; padding: 4px; border: 1px solid #ccc;" /></td>
+                    <td>{{ editingProduct.stockQuantity }}</td>
                     <td>
                         <button (click)="saveEdit()"
                             style="color: green; font-weight: bold; margin-right: 5px;">Lưu</button>
@@ -73,10 +93,15 @@
                 </ng-container>
 
                 <ng-template #viewMode>
+                    <td style="font-family: monospace; font-size: 12px;">{{ p.id }}</td>
                     <td>{{ p.name }}</td>
-                    <td>{{ getCategoryName(p.categoryId) }}</td>
+                    <td>{{ p.categoryId | categoryName }}</td>
                     <td>{{ p.price | number }} VNĐ</td>
-                    <td>{{ p.stockQuantity }}</td>
+                    <td>
+                        <b [style.color]="p.stockQuantity > 0 ? 'green' : 'red'">
+                            {{ p.stockQuantity }}
+                        </b>
+                    </td>
                     <td>
                         <button (click)="startEdit(p)" style="margin-right: 5px;">Sửa</button>
                         <button (click)="deleteProduct(p.id)" style="color: red;">Xóa</button>
@@ -84,8 +109,8 @@
                 </ng-template>
             </tr>
 
-            <tr *ngIf="products.length === 0">
-                <td colspan="5" style="text-align: center;">Chưa có sản phẩm nào.</td>
+            <tr *ngIf="filteredProducts.length === 0">
+                <td colspan="6" style="text-align: center;">Không tìm thấy sản phẩm phù hợp.</td>
             </tr>
         </tbody>
     </table>

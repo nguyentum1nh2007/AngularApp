@@ -1,12 +1,11 @@
 <div style="padding: 20px; max-width: 1000px;">
     <h2>Quản lý Phiếu Nhập / Xuất Kho</h2>
-
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; background-color: #f9f9f9;">
         <h3>Tạo Phiếu Mới</h3>
 
         <div style="margin-bottom: 15px;">
             <label><b>Loại phiếu: </b></label>
-            <select [(ngModel)]="type" style="padding: 6px; margin-right: 15px;">
+            <select [(ngModel)]="type" (change)="clearErrors()" style="padding: 6px; margin-right: 15px;">
                 <option value="IN">Phiếu Nhập (+ Tồn kho)</option>
                 <option value="OUT">Phiếu Xuất (- Tồn kho)</option>
             </select>
@@ -16,12 +15,12 @@
         </div>
 
         <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;" />
-
         <h4>Chi tiết sản phẩm:</h4>
         <div style="margin-bottom: 15px;">
             <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start;">
                 <div>
-                    <select [(ngModel)]="selectedProductId" style="padding: 6px; border: 1px solid;"
+                    <select [(ngModel)]="selectedProductId" (change)="clearErrors()"
+                        style="padding: 6px; border: 1px solid;"
                         [style.border-color]="itemError && !selectedProductId ? 'red' : '#ccc'">
                         <option value="">-- Chọn sản phẩm --</option>
                         <option *ngFor="let p of products" [value]="p.id">
@@ -31,19 +30,19 @@
                 </div>
 
                 <div>
-                    <input type="number" [(ngModel)]="inputQuantity" placeholder="Số lượng"
+                    <input type="number" [(ngModel)]="inputQuantity" (input)="clearErrors()" placeholder="Số lượng"
                         style="width: 100px; padding: 6px; border: 1px solid;"
                         [style.border-color]="itemError && inputQuantity <= 0 ? 'red' : '#ccc'" />
                 </div>
 
                 <div>
-                    <input type="number" [(ngModel)]="inputPrice" placeholder="Đơn giá"
+                    <input type="number" [(ngModel)]="inputPrice" (input)="clearErrors()" placeholder="Đơn giá"
                         style="width: 120px; padding: 6px; border: 1px solid;"
                         [style.border-color]="itemError && inputPrice < 0 ? 'red' : '#ccc'" />
                 </div>
 
-                <button style="padding: 6px 15px; cursor: pointer; background: #e0e0e0; border: 1px solid #999;">+ Thêm
-                    vào
+                <button (click)="addItem()"
+                    style="padding: 6px 15px; cursor: pointer; background: #e0e0e0; border: 1px solid #999;">+ Thêm vào
                     phiếu</button>
             </div>
 
@@ -64,11 +63,11 @@
             </thead>
             <tbody>
                 <tr *ngFor="let item of tempDetails; let i = index">
-                    <td>{{ (item.productId) }}</td>
+                    <td>{{ getProductName(item.productId) }}</td>
                     <td>{{ item.quantity }}</td>
                     <td>{{ item.price | number }}</td>
                     <td style="font-weight: bold; color: #d84315;">{{ (item.quantity * item.price) | number }} VNĐ</td>
-                    <td style="text-align: center;"><button style="color: red;">Xóa</button>
+                    <td style="text-align: center;"><button (click)="removeItem(i)" style="color: red;">Xóa</button>
                     </td>
                 </tr>
                 <tr *ngIf="tempDetails.length === 0">
@@ -81,13 +80,21 @@
             {{ saveError }}
         </div>
 
-        <button
+        <button (click)="saveTransaction()"
             style="background: green; color: white; padding: 10px 20px; cursor: pointer; border: none; font-weight: bold; border-radius: 4px;">
             LƯU PHIẾU NÀY
         </button>
     </div>
 
-    <h3>Lịch sử Giao dịch</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Lịch sử Giao dịch</h3>
+    </div>
+
+    <div *ngIf="deleteError"
+        style="color: red; font-size: 14px; margin-bottom: 15px; font-weight: bold; background: #ffebee; padding: 10px; border: 1px solid #ffcdd2;">
+        Lỗi: {{ deleteError }}
+    </div>
+
     <table border="1" cellPadding="10" style="border-collapse: collapse; width: 100%;">
         <thead>
             <tr style="background: #333; color: white;">
@@ -96,6 +103,7 @@
                 <th>Ngày Tạo</th>
                 <th>Ghi Chú</th>
                 <th>Số Mặt Hàng</th>
+                <th>Hành Động</th>
             </tr>
         </thead>
         <tbody>
@@ -107,9 +115,12 @@
                 <td>{{ t.createdAt }}</td>
                 <td>{{ t.note }}</td>
                 <td>{{ t.details.length }} mục</td>
+                <td style="text-align: center;">
+                    <button (click)="deleteTransaction(t.id)" style="color: red; cursor: pointer;">Xóa</button>
+                </td>
             </tr>
             <tr *ngIf="transactions.length === 0">
-                <td colspan="5" style="text-align: center;">Chưa có lịch sử giao dịch</td>
+                <td colspan="6" style="text-align: center;">Chưa có lịch sử giao dịch</td>
             </tr>
         </tbody>
     </table>

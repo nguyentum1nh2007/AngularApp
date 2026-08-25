@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { LocalStorageService } from '../../core/services/local-storage.service';
 import { Product } from '../../models/product.model';
+import { log } from 'node:console';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -9,6 +10,8 @@ export class ProductService {
     constructor(private storage: LocalStorageService) { }
 
     getAll(): Product[] {
+        console.log(this.storage.get<Product>(this.key));
+
         return this.storage.get<Product>(this.key);
     }
 
@@ -33,9 +36,6 @@ export class ProductService {
     }
 
     update(product: Product): boolean {
-        if (this.existsByNameAndCategory(product.name, product.categoryId, product.id)) {
-            return false;
-        }
 
         const items = this.getAll();
         const index = items.findIndex(p => p.id === product.id);

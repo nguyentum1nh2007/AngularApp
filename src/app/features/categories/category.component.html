@@ -1,7 +1,9 @@
 <div style="padding: 20px; max-width: 650px;">
     <h2>Quản Lý Danh Mục</h2>
-
-    <!-- FORM THÊM DANH MỤC -->
+    <div *ngIf="deleteError"
+        style="color: red; font-size: 14px; margin-bottom: 15px; font-weight: bold; background: #ffebee; padding: 10px; border: 1px solid #ffcdd2;">
+        ⚠️ {{ deleteError }}
+    </div>
     <div style="margin-bottom: 20px;">
         <div style="display: flex; align-items: flex-start;">
             <div>
@@ -17,7 +19,6 @@
         </div>
     </div>
 
-    <!-- BẢNG DANH SÁCH -->
     <table border="1" cellPadding="8" style="border-collapse: collapse; width: 100%;">
         <thead>
             <tr style="background-color: #f2f2f2;">
@@ -30,22 +31,19 @@
             <tr *ngFor="let cat of categories">
                 <td>{{ cat.id }}</td>
 
-                <!-- TRẠNG THÁI SỬA -->
                 <td *ngIf="editingId === cat.id">
                     <input [(ngModel)]="editingName" (input)="clearEditError()" style="padding: 4px; width: 90%;"
                         [style.border-color]="editError ? 'red' : '#ccc'" />
-                    <!-- Thông báo lỗi hiển thị ngay dưới ô Input Sửa -->
+
                     <div *ngIf="editError" style="color: red; font-size: 13px; margin-top: 5px;">
                         {{ editError }}
                     </div>
                 </td>
 
-                <!-- TRẠNG THÁI XEM -->
                 <td *ngIf="editingId !== cat.id">
                     {{ cat.name }}
                 </td>
 
-                <!-- CỘT HÀNH ĐỘNG -->
                 <td>
                     <ng-container *ngIf="editingId === cat.id">
                         <button (click)="saveEdit()"
