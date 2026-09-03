@@ -30,6 +30,11 @@ export class ProductComponent implements OnInit {
     selectedCategoryFilter = '';
     selectedStatusFilter = 'ALL'; // ALL | IN_STOCK | OUT_OF_STOCK
     sortBy = ''; // name_asc | name_desc | stock_asc | stock_desc
+
+    minPrice: number | null = null;
+    maxPrice: number | null = null;
+    filterError = '';
+
     constructor(
         private productService: ProductService,
         private categoryService: CategoryService
@@ -72,7 +77,18 @@ export class ProductComponent implements OnInit {
                     matchesStatus = Number(p.stockQuantity) <= 0;
                 }
 
-                return matchesSearch && matchesCategory && matchesStatus;
+                const price = Number(p.price) || 0;
+
+                const hasMin = this.minPrice !== null && this.minPrice !== undefined && (this.minPrice as any) !== '';
+                const hasMax = this.maxPrice !== null && this.maxPrice !== undefined && (this.maxPrice as any) !== '';
+
+                const minVal = hasMin ? Number(this.minPrice) : null;
+                const maxVal = hasMax ? Number(this.maxPrice) : null;
+
+                const matchesMinPrice = minVal === null || price >= minVal;
+                const matchesMaxPrice = maxVal === null || price <= maxVal;
+
+                return matchesSearch && matchesCategory && matchesStatus && matchesMinPrice && matchesMaxPrice;
             })
             .sort((a, b) => {
                 if (this.sortBy === 'name_asc') return a.name.localeCompare(b.name);
@@ -82,6 +98,27 @@ export class ProductComponent implements OnInit {
                 return 0;
             });
     }
+
+    onPriceFilterChange() {
+        const hasMin = this.minPrice !== null && this.minPrice !== undefined && (this.minPrice as any) !== '';
+        const hasMax = this.maxPrice !== null && this.maxPrice !== undefined && (this.maxPrice as any) !== '';
+
+        if (hasMin && hasMax && Number(this.minPrice) > Number(this.maxPrice)) {
+            this.filterError = 'Giá tối thiểu không được lớn hơn giá tối đa!';
+        } else {
+            this.filterError = '';
+        }
+    }
+    resetFilters() {
+        this.searchTerm = '';
+        this.selectedCategoryFilter = '';
+        this.selectedStatusFilter = 'ALL';
+        this.sortBy = '';
+        this.minPrice = null;
+        this.maxPrice = null;
+        this.filterError = '';
+    }
+
     addProduct() {
         if (!this.newName.trim()) {
             this.addError = 'Tên sản phẩm không được để trống!';

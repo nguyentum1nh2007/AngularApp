@@ -29,6 +29,10 @@ export class TransactionComponent implements OnInit {
     // 
     deleteError = '';
 
+    editingIndex: number | null = null;
+    editQuantity = 1;
+    editPrice = 0;
+
     constructor(
         private transactionService: TransactionService,
         private productService: ProductService
@@ -55,6 +59,10 @@ export class TransactionComponent implements OnInit {
             this.itemError = 'Đơn giá không được âm!';
             return;
         }
+        if (this.inputPrice === null || this.inputPrice === undefined || this.inputPrice <= 0) {
+            this.itemError = 'Bắt buộc phải nhập đơn giá lớn hơn 0!';
+            return;
+        }
 
         this.itemError = '';
 
@@ -74,6 +82,34 @@ export class TransactionComponent implements OnInit {
         this.inputQuantity = 1;
         this.inputPrice = 0;
         this.saveError = '';
+    }
+
+    startEditItem(index: number) {
+        this.editingIndex = index;
+        this.editQuantity = this.tempDetails[index].quantity;
+        this.editPrice = this.tempDetails[index].price;
+        this.itemError = '';
+    }
+
+    saveEditItem(index: number) {
+        if (this.editQuantity <= 0) {
+            this.itemError = 'Số lượng sửa phải lớn hơn 0!';
+            return;
+        }
+        if (this.editPrice <= 0) {
+            this.itemError = 'Đơn giá sửa phải lớn hơn 0!';
+            return;
+        }
+
+        this.tempDetails[index].quantity = this.editQuantity;
+        this.tempDetails[index].price = this.editPrice;
+        this.editingIndex = null;
+        this.itemError = '';
+    }
+
+    cancelEditItem() {
+        this.editingIndex = null;
+        this.itemError = '';
     }
 
     removeItem(index: number) {
@@ -97,6 +133,18 @@ export class TransactionComponent implements OnInit {
     getProductName(id: string): string {
         const p = this.products.find(item => item.id === id);
         return p ? p.name : 'N/A';
+    }
+
+    onProductSelect() {
+        const product = this.products.find(p => p.id === this.selectedProductId);
+        if (product) {
+            this.inputPrice = Number(product.price) || 0;
+        } else {
+            this.inputPrice = 0;
+        }
+        this.itemError = '';
+        console.log(2);
+
     }
 
     clearErrors() {

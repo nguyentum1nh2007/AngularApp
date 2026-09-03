@@ -54,7 +54,7 @@ export class TransactionService {
         const transaction: StockTransaction = {
             id: this.generateTransactionId(type),
             type,
-            createdAt: new Date().toLocaleString('vi-VN'),
+            createdAt: new Date().toLocaleString('en-GB'),
             note: note.trim(),
             details
         };

@@ -16,7 +16,7 @@ export class CategoryComponent implements OnInit {
     addError = '';
     deleteError = '';
 
-
+    editingCategory: Category | null = null;
     editingId: string | null = null;
     editingName = '';
     editError = '';

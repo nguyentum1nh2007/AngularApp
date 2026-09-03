@@ -19,7 +19,7 @@
         <div style="margin-bottom: 15px;">
             <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start;">
                 <div>
-                    <select [(ngModel)]="selectedProductId" (change)="clearErrors()"
+                    <select [(ngModel)]="selectedProductId" (change)="onProductSelect()"
                         style="padding: 6px; border: 1px solid;"
                         [style.border-color]="itemError && !selectedProductId ? 'red' : '#ccc'">
                         <option value="">-- Chọn sản phẩm --</option>
@@ -58,18 +58,44 @@
                     <th>Số Lượng</th>
                     <th>Đơn Giá</th>
                     <th>Thành Tiền</th>
-                    <th style="width: 80px;">Xóa</th>
+                    <th style="width: 130px;">Hành Động</th>
                 </tr>
             </thead>
             <tbody>
                 <tr *ngFor="let item of tempDetails; let i = index">
-                    <td>{{ getProductName(item.productId) }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td>{{ item.price | number }}</td>
-                    <td style="font-weight: bold; color: #d84315;">{{ (item.quantity * item.price) | number }} VNĐ</td>
-                    <td style="text-align: center;"><button (click)="removeItem(i)" style="color: red;">Xóa</button>
-                    </td>
+                    <ng-container *ngIf="editingIndex === i; else viewTempRow">
+                        <td><b>{{ getProductName(item.productId) }}</b></td>
+                        <td>
+                            <input type="number" [(ngModel)]="editQuantity"
+                                style="width: 80px; padding: 4px; border: 1px solid #ccc;" />
+                        </td>
+                        <td>
+                            <input type="number" [(ngModel)]="editPrice"
+                                style="width: 110px; padding: 4px; border: 1px solid #ccc;" />
+                        </td>
+                        <td style="font-weight: bold; color: #d84315;">
+                            {{ (editQuantity * editPrice) | number }} VNĐ
+                        </td>
+                        <td style="text-align: center;">
+                            <button (click)="saveEditItem(i)"
+                                style="color: green; font-weight: bold; margin-right: 5px;">Lưu</button>
+                            <button (click)="cancelEditItem()">Hủy</button>
+                        </td>
+                    </ng-container>
+
+                    <ng-template #viewTempRow>
+                        <td>{{ getProductName(item.productId) }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.price | number }} VNĐ</td>
+                        <td style="font-weight: bold; color: #d84315;">{{ (item.quantity * item.price) | number }} VNĐ
+                        </td>
+                        <td style="text-align: center;">
+                            <button (click)="startEditItem(i)" style="margin-right: 5px;">Sửa</button>
+                            <button (click)="removeItem(i)" style="color: red;">Xóa</button>
+                        </td>
+                    </ng-template>
                 </tr>
+
                 <tr *ngIf="tempDetails.length === 0">
                     <td colspan="5" style="text-align: center; color: #666;">Chưa có sản phẩm nào trong phiếu này</td>
                 </tr>

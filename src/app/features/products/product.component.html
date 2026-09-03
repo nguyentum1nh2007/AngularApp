@@ -1,7 +1,8 @@
 <div style="padding: 20px; max-width: 1000px;">
     <h2>Quản Lý Sản Phẩm</h2>
 
-    <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; background: #f9f9f9;">
+    <!-- FORM THÊM SẢN PHẨM -->
+    <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 4px;">
         <h3>Thêm Sản Phẩm Mới</h3>
         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start;">
             <div>
@@ -27,28 +28,78 @@
     </div>
 
     <div
-        style="margin-bottom: 15px; padding: 12px; background: #eef2f5; border: 1px solid #d0d7de; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-        <input [(ngModel)]="searchTerm" placeholder="🔍 Tìm theo tên hoặc mã ID..."
-            style="padding: 6px; width: 220px; border: 1px solid #ccc;" />
+        style="margin-bottom: 20px; padding: 15px; background: #f0f4f8; border: 1px solid #cbd5e1; border-radius: 6px;">
+        <div style="font-weight: bold; margin-bottom: 10px; color: #1e293b; font-size: 15px;">Bộ Lọc & Tìm Kiếm</div>
 
-        <select [(ngModel)]="selectedCategoryFilter" style="padding: 6px; border: 1px solid #ccc;">
-            <option value="">-- Tất cả Danh mục --</option>
-            <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
-        </select>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
 
-        <select [(ngModel)]="selectedStatusFilter" style="padding: 6px; border: 1px solid #ccc;">
-            <option value="ALL">-- Tất cả Trạng thái --</option>
-            <option value="IN_STOCK">Còn hàng (> 0)</option>
-            <option value="OUT_OF_STOCK">Hết hàng (= 0)</option>
-        </select>
+            <div>
+                <label
+                    style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #475569;">Từ
+                    khóa:</label>
+                <input [(ngModel)]="searchTerm" placeholder="Mã ID hoặc tên..."
+                    style="padding: 6px 10px; width: 180px; border: 1px solid #cbd5e1; border-radius: 4px;" />
+            </div>
 
-        <select [(ngModel)]="sortBy" style="padding: 6px; border: 1px solid #ccc;">
-            <option value="">-- Sắp xếp --</option>
-            <option value="name_asc">Tên (A-Z)</option>
-            <option value="name_desc">Tên (Z-A)</option>
-            <option value="stock_asc">Tồn kho (Tăng dần)</option>
-            <option value="stock_desc">Tồn kho (Giảm dần)</option>
-        </select>
+            <div>
+                <label
+                    style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #475569;">Danh
+                    mục:</label>
+                <select [(ngModel)]="selectedCategoryFilter"
+                    style="padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                    <option value="">Tất cả danh mục</option>
+                    <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label
+                    style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #475569;">Khoảng
+                    giá (VNĐ):</label>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <input type="number" [(ngModel)]="minPrice" (input)="onPriceFilterChange()" placeholder="Từ..."
+                        style="padding: 6px 8px; width: 90px; border: 1px solid #cbd5e1; border-radius: 4px;" />
+                    <span>-</span>
+                    <input type="number" [(ngModel)]="maxPrice" (input)="onPriceFilterChange()" placeholder="Đến..."
+                        style="padding: 6px 8px; width: 90px; border: 1px solid #cbd5e1; border-radius: 4px;" />
+                </div>
+            </div>
+
+            <div>
+                <label
+                    style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #475569;">Tồn
+                    kho:</label>
+                <select [(ngModel)]="selectedStatusFilter"
+                    style="padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                    <option value="ALL">Tất cả</option>
+                    <option value="IN_STOCK">Còn hàng (>0)</option>
+                    <option value="OUT_OF_STOCK">Hết hàng (=0)</option>
+                </select>
+            </div>
+
+            <div>
+                <label
+                    style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #475569;">Sắp
+                    xếp:</label>
+                <select [(ngModel)]="sortBy" style="padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                    <option value="">Mặc định</option>
+                    <option value="name_asc">Tên (A-Z)</option>
+                    <option value="name_desc">Tên (Z-A)</option>
+                    <option value="stock_asc">Tồn kho tăng dần</option>
+                    <option value="stock_desc">Tồn kho giảm dần</option>
+                </select>
+            </div>
+
+            <button (click)="resetFilters()"
+                style="padding: 6px 12px; background: #64748b; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Xóa lọc
+            </button>
+
+        </div>
+
+        <div *ngIf="filterError" style="color: #dc2626; font-size: 13px; font-weight: bold; margin-top: 10px;">
+            ⚠️ {{ filterError }}
+        </div>
     </div>
 
     <table border="1" cellPadding="8" style="border-collapse: collapse; width: 100%;">
@@ -63,7 +114,6 @@
             </tr>
         </thead>
         <tbody>
-
             <tr *ngFor="let p of filteredProducts">
                 <ng-container *ngIf="editingProduct && editingProduct.id === p.id; else viewMode">
                     <td>{{ p.id }}</td>
@@ -110,7 +160,7 @@
             </tr>
 
             <tr *ngIf="filteredProducts.length === 0">
-                <td colspan="6" style="text-align: center;">Không tìm thấy sản phẩm phù hợp.</td>
+                <td colspan="6" style="text-align: center; color: #64748b;">Không tìm thấy sản phẩm phù hợp.</td>
             </tr>
         </tbody>
     </table>

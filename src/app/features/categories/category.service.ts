@@ -55,7 +55,7 @@ export class CategoryService {
         if (hasProducts) {
             return {
                 success: false,
-                errorMessage: 'Không thể xóa danh mục này vì vẫn còn sản phẩm thuộc về nó!'
+                errorMessage: 'Không thể xóa danh mục này vì vẫn còn sản phẩm thuộc danh mục!'
             };
         }
 
