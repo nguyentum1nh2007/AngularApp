@@ -1,0 +1,66 @@
+<div style="padding: 20px; max-width: 800px;">
+    <h2>Quản Lý Danh Mục</h2>
+
+    <!-- BÁO LỖI KHI XÓA THẤT BẠI -->
+    <div *ngIf="deleteError"
+        style="color: #d32f2f; font-size: 14px; margin-bottom: 15px; font-weight: bold; background: #ffebee; padding: 12px; border: 1px solid #ffcdd2; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+        <span> {{ deleteError }}</span>
+        <button (click)="deleteError = ''"
+            style="background: none; border: none; color: #d32f2f; font-weight: bold; cursor: pointer;">✕</button>
+    </div>
+
+    <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 4px;">
+        <h3>Thêm Danh Mục Mới</h3>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <input [(ngModel)]="newCategoryName" (input)="clearAddError()" placeholder="Tên danh mục..."
+                style="padding: 6px; border: 1px solid; flex: 1;" [style.border-color]="addError ? 'red' : '#ccc'" />
+            <button (click)="addCategory()" style="padding: 6px 15px; cursor: pointer;">Thêm</button>
+        </div>
+        <div *ngIf="addError" style="color: red; font-size: 13px; margin-top: 8px; font-weight: bold;">
+            {{ addError }}
+        </div>
+    </div>
+
+    <table border="1" cellPadding="8" style="border-collapse: collapse; width: 100%;">
+        <thead>
+            <tr style="background: #eee;">
+                <th style="width: 180px;">Mã (ID)</th>
+                <th>Tên Danh Mục</th>
+                <th style="width: 140px;">Hành Động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let cat of categories">
+                <ng-container *ngIf="editingCategory && editingCategory.id === cat.id; else viewMode">
+                    <td style="font-family: monospace; font-size: 12px;">{{ cat.id }}</td>
+                    <td>
+                        <input [(ngModel)]="editingCategory.name" (input)="clearEditError()"
+                            style="width: 90%; padding: 4px; border: 1px solid;"
+                            [style.border-color]="editError ? 'red' : '#ccc'" />
+                        <div *ngIf="editError" style="color: red; font-size: 12px; margin-top: 5px; font-weight: bold;">
+                            {{ editError }}
+                        </div>
+                    </td>
+                    <td>
+                        <button (click)="saveEdit()"
+                            style="color: green; font-weight: bold; margin-right: 5px;">Lưu</button>
+                        <button (click)="cancelEdit()">Hủy</button>
+                    </td>
+                </ng-container>
+
+                <ng-template #viewMode>
+                    <td style="font-family: monospace; font-size: 12px;">{{ cat.id }}</td>
+                    <td>{{ cat.name }}</td>
+                    <td>
+                        <button (click)="startEdit(cat)" style="margin-right: 5px;">Sửa</button>
+                        <button (click)="deleteCategory(cat.id)" style="color: red;">Xóa</button>
+                    </td>
+                </ng-template>
+            </tr>
+
+            <tr *ngIf="categories.length === 0">
+                <td colspan="3" style="text-align: center;">Chưa có danh mục nào.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

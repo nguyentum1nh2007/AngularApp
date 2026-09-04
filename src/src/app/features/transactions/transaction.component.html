@@ -1,0 +1,259 @@
+<div style="padding: 20px; max-width: 1100px; margin: 0 auto;">
+    <h2>Quản Lý Phiếu Nhập / Xuất Kho</h2>
+
+    <div style="margin-bottom: 30px; padding: 20px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 6px;">
+        <h3 style="margin-top: 0;">Tạo Phiếu Mới</h3>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 15px; align-items: center;">
+            <div>
+                <label style="font-weight: bold; margin-right: 10px;">Loại phiếu:</label>
+                <select [(ngModel)]="type" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="IN">Phiếu Nhập (+ Tồn kho)</option>
+                    <option value="OUT">Phiếu Xuất (- Tồn kho)</option>
+                </select>
+            </div>
+            <div style="flex: 1;">
+                <input [(ngModel)]="note" placeholder="Ghi chú (tùy chọn)..."
+                    style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px;" />
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;" />
+
+        <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 15px; flex-wrap: wrap;">
+            <select [(ngModel)]="selectedProductId" (change)="onProductSelect()"
+                style="padding: 6px; border: 1px solid #ccc; flex: 1; min-width: 200px; border-radius: 4px;">
+                <option value="">-- Chọn sản phẩm --</option>
+                <option *ngFor="let p of products" [value]="p.id">
+                    {{ p.name }} (Tồn: {{ p.stockQuantity }})
+                </option>
+            </select>
+
+            <input type="number" [(ngModel)]="inputQuantity" placeholder="Số lượng"
+                style="padding: 6px; width: 90px; border: 1px solid #ccc; border-radius: 4px;" />
+            <input type="number" [(ngModel)]="inputPrice" placeholder="Đơn giá"
+                style="padding: 6px; width: 120px; border: 1px solid #ccc; border-radius: 4px;" />
+
+            <button (click)="addItem()"
+                style="padding: 6px 15px; cursor: pointer; background: #0288d1; color: white; border: none; border-radius: 4px; font-weight: bold;">
+                Thêm vào phiếu
+            </button>
+        </div>
+
+        <div *ngIf="itemError" style="color: red; font-size: 13px; font-weight: bold; margin-bottom: 15px;">
+            ⚠️ {{ itemError }}
+        </div>
+
+        <table border="1" cellPadding="8"
+            style="border-collapse: collapse; width: 100%; margin-bottom: 15px; background: white;">
+            <thead>
+                <tr style="background: #eef2f5;">
+                    <th>Tên Sản Phẩm</th>
+                    <th style="width: 120px;">Số Lượng</th>
+                    <th style="width: 150px;">Đơn Giá</th>
+                    <th style="width: 150px;">Thành Tiền</th>
+                    <th style="width: 130px;">Hành Động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of tempDetails; let i = index">
+                    <ng-container *ngIf="editingIndex === i; else viewTempRow">
+                        <td><b>{{ getProductName(item.productId) }}</b></td>
+                        <td>
+                            <input type="number" [(ngModel)]="editQuantity"
+                                style="width: 80px; padding: 4px; border: 1px solid #ccc;" />
+                        </td>
+                        <td>
+                            <input type="number" [(ngModel)]="editPrice"
+                                style="width: 110px; padding: 4px; border: 1px solid #ccc;" />
+                        </td>
+                        <td style="font-weight: bold; color: #d84315;">
+                            {{ (editQuantity * editPrice) | number }} VNĐ
+                        </td>
+                        <td style="text-align: center;">
+                            <button (click)="saveEditItem(i)"
+                                style="color: green; font-weight: bold; margin-right: 5px; cursor: pointer;">Lưu</button>
+                            <button (click)="cancelEditItem()" style="cursor: pointer;">Hủy</button>
+                        </td>
+                    </ng-container>
+
+                    <ng-template #viewTempRow>
+                        <td>{{ getProductName(item.productId) }}</td>
+                        <td style="text-align: right;">{{ item.quantity }}</td>
+                        <td style="text-align: right;">{{ item.price | number }} VNĐ</td>
+                        <td style="text-align: right; font-weight: bold; color: #d84315;">{{ (item.quantity *
+                            item.price) | number }} VNĐ</td>
+                        <td style="text-align: center;">
+                            <button (click)="startEditItem(i)" style="margin-right: 5px; cursor: pointer;">Sửa</button>
+                            <button (click)="removeItem(i)" style="color: red; cursor: pointer;">Xóa</button>
+                        </td>
+                    </ng-template>
+                </tr>
+
+                <tr *ngIf="tempDetails.length === 0">
+                    <td colspan="5" style="text-align: center; color: #666; padding: 20px;">Chưa có sản phẩm nào trong
+                        phiếu này.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div *ngIf="saveError"
+            style="color: red; font-size: 14px; font-weight: bold; margin-bottom: 15px; padding: 10px; background: #ffebee; border: 1px solid #ffcdd2;">
+            ⚠️ {{ saveError }}
+        </div>
+
+        <div style="text-align: right;">
+            <button (click)="saveTransaction()" [disabled]="tempDetails.length === 0"
+                style="padding: 10px 25px; font-size: 15px; font-weight: bold; cursor: pointer; background: #2e7d32; color: white; border: none; border-radius: 4px;"
+                [style.opacity]="tempDetails.length === 0 ? '0.5' : '1'">
+                ✅ LƯU PHIẾU NÀY
+            </button>
+        </div>
+    </div>
+
+    <h3 style="margin-top: 40px; border-top: 2px solid #eee; padding-top: 20px;">Lịch Sử Giao Dịch</h3>
+
+    <div
+        style="margin-bottom: 15px; padding: 12px; background: #f0f4f8; border: 1px solid #cbd5e1; border-radius: 6px; display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+        <div>
+            <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #475569;">Từ
+                khóa:</label>
+            <input [(ngModel)]="searchTermTx" placeholder="🔍 Mã phiếu, ghi chú..."
+                style="padding: 6px 10px; width: 200px; border: 1px solid #cbd5e1; border-radius: 4px;" />
+        </div>
+
+        <div>
+            <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #475569;">Loại
+                phiếu:</label>
+            <select [(ngModel)]="filterType"
+                style="padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; width: 150px;">
+                <option value="ALL">Tất cả</option>
+                <option value="IN">Phiếu Nhập</option>
+                <option value="OUT">Phiếu Xuất</option>
+            </select>
+        </div>
+
+        <div>
+            <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #475569;">Sắp
+                xếp:</label>
+            <select [(ngModel)]="sortByTx"
+                style="padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; width: 160px;">
+                <option value="date_desc">Mới nhất trước</option>
+                <option value="date_asc">Cũ nhất trước</option>
+            </select>
+        </div>
+
+        <button (click)="resetTxFilters()"
+            style="padding: 6px 12px; background: #64748b; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            🔄 Xóa lọc
+        </button>
+    </div>
+
+    <table border="1" cellPadding="8" style="border-collapse: collapse; width: 100%; background: white;">
+        <thead>
+            <tr style="background: #eee;">
+                <th style="width: 220px;">Mã Phiếu</th>
+                <th style="width: 120px;">Loại</th>
+                <th style="width: 180px;">Ngày Lập</th>
+                <th>Ghi Chú</th>
+                <th style="width: 160px;">Hành Động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let t of filteredTransactions">
+                <td style="font-family: monospace; font-size: 13px;">{{ t.id }}</td>
+                <td style="text-align: center;">
+                    <span [style.color]="t.type === 'IN' ? 'green' : 'red'"
+                        style="font-weight: bold; padding: 4px 8px; background: #f5f5f5; border-radius: 4px;">
+                        {{ t.type === 'IN' ? 'NHẬP' : 'XUẤT' }}
+                    </span>
+                </td>
+                <td style="text-align: center;">{{ t.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+                <td>{{ t.note }}</td>
+                <td style="text-align: center;">
+                    <button (click)="viewDetails(t)"
+                        style="color: #0277bd; font-weight: bold; margin-right: 8px; cursor: pointer; border: 1px solid #0277bd; background: #e1f5fe; padding: 4px 8px; border-radius: 4px;">
+                        👁️ Xem
+                    </button>
+                    <button (click)="deleteTransaction(t.id)"
+                        style="color: red; cursor: pointer; padding: 4px 8px; background: white; border: 1px solid #ccc; border-radius: 4px;">Xóa</button>
+                </td>
+            </tr>
+
+            <tr *ngIf="filteredTransactions.length === 0">
+                <td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">Không có phiếu nào phù hợp
+                    với bộ lọc.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div *ngIf="selectedTransaction"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 9999;">
+
+    <div
+        style="background: white; width: 90%; max-width: 800px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh;">
+
+        <div
+            style="background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; color: #0f172a;">
+                Chi Tiết Phiếu {{ selectedTransaction.type === 'IN' ? 'NHẬP' : 'XUẤT' }}
+            </h3>
+            <button (click)="closeDetails()"
+                style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b;">✖</button>
+        </div>
+
+        <div style="padding: 15px 20px; background: #fff;">
+            <p style="margin: 5px 0;"><strong>Mã phiếu:</strong> <span style="font-family: monospace;">{{
+                    selectedTransaction.id }}</span></p>
+            <p style="margin: 5px 0;"><strong>Ngày lập:</strong> {{ selectedTransaction.createdAt | date:'dd/MM/yyyy
+                HH:mm:ss' }}</p>
+            <p style="margin: 5px 0;" *ngIf="selectedTransaction.note"><strong>Ghi chú:</strong> {{
+                selectedTransaction.note }}</p>
+        </div>
+
+        <!-- Bảng chi tiết mặt hàng -->
+        <div style="padding: 0 20px 20px 20px; overflow-y: auto;">
+            <table border="1" cellPadding="8" style="border-collapse: collapse; width: 100%;">
+                <thead>
+                    <tr style="background: #f1f5f9;">
+                        <th style="width: 50px; text-align: center;">STT</th>
+                        <th>Tên Sản Phẩm</th>
+                        <th style="text-align: right; width: 100px;">Số Lượng</th>
+                        <th style="text-align: right; width: 130px;">Đơn Giá</th>
+                        <th style="text-align: right; width: 150px;">Thành Tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of selectedTransaction.details; let i = index">
+                        <td style="text-align: center;">{{ i + 1 }}</td>
+                        <td>{{ getProductName(item.productId) }}</td>
+                        <td style="text-align: right;">{{ item.quantity }}</td>
+                        <td style="text-align: right;">{{ item.price | number }} VNĐ</td>
+                        <td style="text-align: right; font-weight: bold; color: #333;">
+                            {{ (item.quantity * item.price) | number }} VNĐ
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Tổng cộng -->
+            <div
+                style="text-align: right; margin-top: 15px; font-size: 16px; padding-top: 15px; border-top: 1px dashed #ccc;">
+                <strong>TỔNG TIỀN:</strong>
+                <span style="color: #dc2626; font-size: 20px; font-weight: bold; margin-left: 10px;">
+                    {{ calculateTotal(selectedTransaction) | number }} VNĐ
+                </span>
+            </div>
+        </div>
+
+        <!-- Footer Modal -->
+        <div style="padding: 15px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: right;">
+            <button (click)="closeDetails()"
+                style="padding: 8px 20px; background: #64748b; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                Đóng
+            </button>
+        </div>
+
+    </div>
+</div>
